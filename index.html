@@ -555,7 +555,7 @@ function submitReg() {
   })
   .then(function (result) {
     if (result === "OK") {
-      alert("登録が完了しました！\nもう一度開いて注文してください");
+      alert("登録が完了しました！\nお店側で確認します。\n注文可能になりましたらメッセージでお知らせします。");
       liff.closeWindow();
     } else {
       alert("登録エラー: " + result);
