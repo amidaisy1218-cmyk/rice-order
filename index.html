@@ -298,6 +298,10 @@ window.onload = function () {
 };
 
 function loadUserData() {
+  // URLのmodeパラメータを取得（register or order）
+  var urlParams = new URLSearchParams(window.location.search);
+  var mode = urlParams.get("mode") || "order";
+
   liff.getProfile()
     .then(function (profile) {
       state.lineId   = profile.userId;
@@ -306,12 +310,29 @@ function loadUserData() {
     })
     .then(function (res) {
       hide("loader");
-      if (res.isRegistered) {
-        state.userName = res.name;
-        state.remain   = parseInt(res.remain) || 0;
-        showOrderScreen();
+
+      if (mode === "register") {
+        // 初回登録ボタンから来た場合
+        if (res.isRegistered) {
+          // すでに登録済みなら注文画面へ
+          state.userName = res.name;
+          state.remain   = parseInt(res.remain) || 0;
+          showOrderScreen();
+        } else {
+          // 未登録なら登録画面へ
+          show("screenReg");
+        }
       } else {
-        show("screenReg");
+        // 注文ボタンから来た場合
+        if (res.isRegistered) {
+          state.userName = res.name;
+          state.remain   = parseInt(res.remain) || 0;
+          showOrderScreen();
+        } else {
+          // 未登録なら登録を促す
+          alert("まず初回登録を行ってください。");
+          show("screenReg");
+        }
       }
     })
     .catch(function (err) {
