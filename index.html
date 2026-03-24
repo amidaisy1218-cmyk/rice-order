@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta charset="UTF-8">
-  <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>お米注文フォーム</title>
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
 
   <style>
@@ -76,10 +75,11 @@
     }
 
     .debug {
-      font-size: 12px;
-      color: #999;
+      font-size: 11px;
+      color: #bbb;
       margin-top: 16px;
       text-align: center;
+      word-break: break-all;
     }
   </style>
 </head>
@@ -114,62 +114,47 @@
 <div id="debug-msg" class="debug"></div>
 
 <script>
-var LIFF_ID = "<?!= liffId ?>";
+// ★ここをGASのデプロイURLに変更
+var GAS_URL = "https://script.google.com/macros/s/AKfycbypXWHGPENrNF-eb0GJra_n41dPW71S-J5galefIjkYkwWUBboszzIrNZDnhakmoPPx/exec";
+
+// ★ここをLIFF IDに変更
+var LIFF_ID = "2009577200-2OdUcEjb";
 
 window.onload = function () {
   setDebug("onload開始");
 
-  if (!LIFF_ID || LIFF_ID === "") {
-    showError("LIFF IDが空です。設定シートを確認してください");
-    return;
-  }
-
-  setDebug("LIFF初期化中... ID=" + LIFF_ID);
-
-  try {
-    liff.init({ liffId: LIFF_ID })
-      .then(function() {
-        setDebug("LIFF初期化完了");
-        if (!liff.isLoggedIn()) {
-          setDebug("ログインへリダイレクト");
-          liff.login();
-        } else {
-          setDebug("プロフィール取得中");
-          loadUserData();
-        }
-      })
-      .catch(function(err) {
-        showError("LIFF初期化失敗: " + String(err));
-      });
-  } catch(e) {
-    showError("LIFF例外エラー: " + String(e));
-  }
+  liff.init({ liffId: LIFF_ID })
+    .then(function () {
+      setDebug("LIFF初期化完了");
+      if (!liff.isLoggedIn()) {
+        liff.login();
+      } else {
+        loadUserData();
+      }
+    })
+    .catch(function (err) {
+      showError("LIFF初期化失敗: " + String(err));
+    });
 };
 
 function loadUserData() {
   liff.getProfile()
-    .then(function(profile) {
+    .then(function (profile) {
       setDebug("プロフィール取得OK: " + profile.displayName);
-
-      google.script.run
-        .withSuccessHandler(function(res) {
-          document.getElementById("loader").style.display = "none";
-
-          if (res.isRegistered) {
-            document.getElementById("orderForm").style.display = "block";
-            document.getElementById("userName").innerText = res.name;
-            document.getElementById("userRem").innerText  = res.remain;
-          } else {
-            document.getElementById("regForm").style.display = "block";
-          }
-        })
-        .withFailureHandler(function(err) {
-          showError("GAS通信エラー: " + JSON.stringify(err));
-        })
-        .checkUserStatus(profile.userId);
+      return callGAS("checkUserStatus", { lineId: profile.userId });
     })
-    .catch(function(err) {
-      showError("getProfileエラー: " + JSON.stringify(err));
+    .then(function (res) {
+      document.getElementById("loader").style.display = "none";
+      if (res.isRegistered) {
+        document.getElementById("orderForm").style.display = "block";
+        document.getElementById("userName").innerText = res.name;
+        document.getElementById("userRem").innerText  = res.remain;
+      } else {
+        document.getElementById("regForm").style.display = "block";
+      }
+    })
+    .catch(function (err) {
+      showError("エラー: " + String(err));
     });
 }
 
@@ -186,31 +171,42 @@ function submitReg() {
   btn.disabled    = true;
   btn.textContent = "送信中...";
 
-  liff.getProfile().then(function(p) {
-    google.script.run
-      .withSuccessHandler(function(result) {
-        if (result === "OK") {
-          alert("登録が完了しました！\nもう一度開いて注文してください");
-          liff.closeWindow();
-        } else {
-          showError("登録エラー: " + result);
-          btn.disabled    = false;
-          btn.textContent = "登録する";
-        }
-      })
-      .withFailureHandler(function(err) {
-        showError("GAS通信エラー: " + JSON.stringify(err));
-        btn.disabled    = false;
-        btn.textContent = "登録する";
-      })
-      .registerCustomer({
+  liff.getProfile()
+    .then(function (p) {
+      return callGAS("registerCustomer", {
         lineId:   p.userId,
         lineName: p.displayName,
         name:     name,
         address:  address,
         tel:      tel
       });
-  });
+    })
+    .then(function (result) {
+      if (result === "OK") {
+        alert("登録が完了しました！\nもう一度開いて注文してください");
+        liff.closeWindow();
+      } else {
+        showError("登録エラー: " + result);
+        btn.disabled    = false;
+        btn.textContent = "登録する";
+      }
+    })
+    .catch(function (err) {
+      showError("通信エラー: " + String(err));
+      btn.disabled    = false;
+      btn.textContent = "登録する";
+    });
+}
+
+// GASにPOSTリクエストを送る共通関数
+function callGAS(action, params) {
+  var body = Object.assign({ action: action }, params);
+  return fetch(GAS_URL, {
+    method: "POST",
+    body: JSON.stringify(body),
+    headers: { "Content-Type": "text/plain" }
+  })
+  .then(function (r) { return r.json(); });
 }
 
 function showError(msg) {
