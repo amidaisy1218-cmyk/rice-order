@@ -555,7 +555,7 @@ function submitReg() {
   })
   .then(function (result) {
     if (result === "OK") {
-      alert("登録が完了しました！\nお店側で確認します。\n注文可能になりましたらメッセージでお知らせします。");
+      alert("ご登録ありがとうございます！\nお店側で登録内容を確認後、\nLINEにてお米の注文が可能になった旨をご連絡いたします。\nしばらくお待ちください。");
       liff.closeWindow();
     } else {
       alert("登録エラー: " + result);
