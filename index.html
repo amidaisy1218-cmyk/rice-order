@@ -16,7 +16,6 @@
       padding: 20px 16px 40px;
     }
 
-    /* ローダー */
     #loader {
       text-align: center;
       padding-top: 80px;
@@ -24,7 +23,6 @@
       font-size: 15px;
     }
 
-    /* カード共通 */
     .screen { display: none; }
 
     .card {
@@ -35,7 +33,6 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.07);
     }
 
-    /* ユーザー情報バー */
     .user-bar {
       background: #e8f5e9;
       border-radius: 12px;
@@ -43,13 +40,12 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
-    .user-bar .name { font-size: 15px; color: #333; }
+    .user-bar .name   { font-size: 15px; color: #333; }
     .user-bar .remain { font-size: 13px; color: #555; }
     .user-bar .remain span { font-size: 22px; font-weight: bold; color: #2e7d32; }
 
-    /* セクションタイトル */
     .section-title {
       font-size: 13px;
       font-weight: bold;
@@ -58,7 +54,13 @@
       letter-spacing: 0.05em;
     }
 
-    /* トグルボタン */
+    .consume-note {
+      font-size: 12px;
+      color: #f57c00;
+      margin-top: 6px;
+      min-height: 18px;
+    }
+
     .toggle-group {
       display: flex;
       border-radius: 10px;
@@ -84,7 +86,6 @@
       border-right: 1.5px solid #ddd;
     }
 
-    /* エリア・日付選択 */
     select {
       width: 100%;
       padding: 13px 12px;
@@ -108,11 +109,9 @@
       color: #333;
     }
 
-    /* 配達エリア・日付ブロック */
-    .delivery-block { display: none; margin-top: 0; }
-    .store-block    { display: none; margin-top: 0; }
+    .store-block    { display: block; }
+    .delivery-block { display: none; }
 
-    /* 確認画面 */
     .confirm-row {
       display: flex;
       justify-content: space-between;
@@ -124,7 +123,6 @@
     .confirm-row .label { color: #888; }
     .confirm-row .value { font-weight: bold; color: #222; }
 
-    /* ボタン */
     .btn {
       width: 100%;
       padding: 16px;
@@ -136,35 +134,15 @@
       margin-top: 8px;
       transition: opacity 0.2s;
     }
-    .btn:active { opacity: 0.8; }
-    .btn-primary { background: #222; color: white; }
-    .btn-outline {
-      background: white;
-      color: #222;
-      border: 1.5px solid #ddd;
-    }
+    .btn:active   { opacity: 0.8; }
+    .btn-primary  { background: #222; color: white; }
+    .btn-outline  { background: white; color: #222; border: 1.5px solid #ddd; }
     .btn:disabled { background: #ccc; cursor: not-allowed; }
 
-    /* 完了画面 */
-    .complete-icon {
-      font-size: 64px;
-      text-align: center;
-      margin: 20px 0 10px;
-    }
-    .complete-title {
-      text-align: center;
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
-    .complete-sub {
-      text-align: center;
-      color: #888;
-      font-size: 14px;
-      line-height: 1.6;
-    }
+    .complete-icon  { font-size: 64px; text-align: center; margin: 20px 0 10px; }
+    .complete-title { text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 8px; }
+    .complete-sub   { text-align: center; color: #888; font-size: 14px; line-height: 1.6; }
 
-    /* 残り0回の警告 */
     .warn-box {
       background: #fff3e0;
       border-radius: 10px;
@@ -186,19 +164,16 @@
 <!-- ========== 注文フォーム画面 ========== -->
 <div id="screenOrder" class="screen">
 
-  <!-- ユーザー情報 -->
   <div class="user-bar">
     <div class="name" id="userName">-</div>
     <div class="remain">残り <span id="userRem">-</span> 回</div>
   </div>
 
-  <!-- 残り0回の場合 -->
-  <div id="noRemain" class="warn-box" style="display:none">
+  <div id="noRemain" class="warn-box" style="display:none;margin-bottom:16px">
     残り回数が0回のため注文できません。<br>
     契約更新については店舗までお問い合わせください。
   </div>
 
-  <!-- 注文フォーム本体 -->
   <div id="orderFormBody">
 
     <!-- 数量 -->
@@ -208,6 +183,7 @@
         <button id="btn5kg"  class="active" onclick="selectKg(5)">5kg</button>
         <button id="btn10kg"            onclick="selectKg(10)">10kg</button>
       </div>
+      <div class="consume-note" id="consumeNote">※ 5kg = 1回消化</div>
     </div>
 
     <!-- 受取方法 -->
@@ -219,12 +195,12 @@
       </div>
 
       <!-- 店舗受取：カレンダー -->
-      <div class="store-block gap" id="storeBlock" style="display:block">
+      <div class="store-block gap" id="storeBlock">
         <div class="section-title" style="margin-top:4px">受取日</div>
         <input type="date" id="storeDate">
       </div>
 
-      <!-- 配達：エリア + 日付 -->
+      <!-- 配達：エリア＋日付 -->
       <div class="delivery-block gap" id="deliveryBlock">
         <div class="section-title" style="margin-top:4px">配達エリア</div>
         <select id="areaSelect" onchange="onAreaChange()">
@@ -247,6 +223,7 @@
     <div style="font-size:17px;font-weight:bold;margin-bottom:16px">注文内容の確認</div>
     <div class="confirm-row"><span class="label">お名前</span><span class="value" id="cfName"></span></div>
     <div class="confirm-row"><span class="label">数量</span><span class="value" id="cfKg"></span></div>
+    <div class="confirm-row"><span class="label">回数消化</span><span class="value" id="cfConsume"></span></div>
     <div class="confirm-row"><span class="label">受取方法</span><span class="value" id="cfMethod"></span></div>
     <div class="confirm-row" id="cfAreaRow"><span class="label">エリア</span><span class="value" id="cfArea"></span></div>
     <div class="confirm-row"><span class="label">受取日</span><span class="value" id="cfDate"></span></div>
@@ -277,9 +254,9 @@
   <div class="card" style="margin-top:8px">
     <div style="font-size:17px;font-weight:bold;margin-bottom:4px">初回登録</div>
     <p style="color:#888;font-size:13px;margin-bottom:16px">お名前・住所・電話番号を入力してください</p>
-    <input type="text" id="rName"    placeholder="お名前（必須）" style="margin-bottom:8px">
-    <input type="text" id="rAddress" placeholder="ご住所（必須）" style="margin-bottom:8px">
-    <input type="tel"  id="rTel"     placeholder="電話番号（必須）">
+    <input type="text" id="rName"    placeholder="お名前（必須）" style="width:100%;padding:12px;margin-bottom:8px;border:1.5px solid #ddd;border-radius:10px;font-size:15px">
+    <input type="text" id="rAddress" placeholder="ご住所（必須）" style="width:100%;padding:12px;margin-bottom:8px;border:1.5px solid #ddd;border-radius:10px;font-size:15px">
+    <input type="tel"  id="rTel"     placeholder="電話番号（必須）" style="width:100%;padding:12px;border:1.5px solid #ddd;border-radius:10px;font-size:15px">
   </div>
   <button class="btn btn-primary" id="regBtn" onclick="submitReg()">登録する</button>
 </div>
@@ -352,19 +329,19 @@ function showOrderScreen() {
 
   if (state.remain <= 0) {
     hide("orderFormBody");
-    show("noRemain");
+    document.getElementById("noRemain").style.display = "block";
     return;
   }
 
-// 設定シートから最短受付日数を取得して日付制限に反映
-callGAS("getConfig", { key: "最短受付日数" })
-  .then(function (days) {
-    var minDays = parseInt(days) || 7;
-    var minDate = new Date();
-    minDate.setDate(minDate.getDate() + minDays);
-    document.getElementById("storeDate").min = formatDate(minDate);
-    document.getElementById("storeDate").value = formatDate(minDate);
-  });
+  // 設定シートから最短受付日数を取得
+  callGAS("getConfig", { key: "最短受付日数" })
+    .then(function (days) {
+      var minDays = parseInt(days) || 7;
+      var minDate = new Date();
+      minDate.setDate(minDate.getDate() + minDays);
+      document.getElementById("storeDate").min   = formatDate(minDate);
+      document.getElementById("storeDate").value = formatDate(minDate);
+    });
 
   // エリア一覧を取得
   callGAS("getAreas", {})
@@ -373,7 +350,7 @@ callGAS("getConfig", { key: "最短受付日数" })
       sel.innerHTML = '<option value="">-- エリアを選択 --</option>';
       areas.forEach(function (a) {
         var opt = document.createElement("option");
-        opt.value = a;
+        opt.value       = a;
         opt.textContent = a;
         sel.appendChild(opt);
       });
@@ -381,12 +358,27 @@ callGAS("getConfig", { key: "最短受付日数" })
 }
 
 // -----------------------------------------------
-// 数量選択
+// 数量選択（消化回数の表示も更新）
 // -----------------------------------------------
 function selectKg(kg) {
   state.kg = kg;
   document.getElementById("btn5kg").classList.toggle("active",  kg === 5);
   document.getElementById("btn10kg").classList.toggle("active", kg === 10);
+
+  var note = document.getElementById("consumeNote");
+  if (kg === 10) {
+    note.textContent = "※ 10kg = 2回消化";
+    // 残り1回しかない場合は警告
+    if (state.remain < 2) {
+      note.textContent = "※ 10kg = 2回消化（残り回数が不足しています）";
+      note.style.color = "#d32f2f";
+    } else {
+      note.style.color = "#f57c00";
+    }
+  } else {
+    note.textContent = "※ 5kg = 1回消化";
+    note.style.color = "#f57c00";
+  }
 }
 
 // -----------------------------------------------
@@ -404,7 +396,7 @@ function selectMethod(method) {
 // エリア変更時：配達日を取得
 // -----------------------------------------------
 function onAreaChange() {
-  var area = document.getElementById("areaSelect").value;
+  var area    = document.getElementById("areaSelect").value;
   var dateSel = document.getElementById("deliveryDate");
   dateSel.innerHTML = '<option value="">読み込み中...</option>';
 
@@ -422,7 +414,7 @@ function onAreaChange() {
       }
       dates.forEach(function (d) {
         var opt = document.createElement("option");
-        opt.value = d.date;
+        opt.value       = d.date;
         opt.textContent = d.date;
         dateSel.appendChild(opt);
       });
@@ -434,6 +426,13 @@ function onAreaChange() {
 // -----------------------------------------------
 function goConfirm() {
   var date, area;
+  var consume = state.kg >= 10 ? 2 : 1;
+
+  // 残り回数チェック
+  if (state.remain < consume) {
+    alert("残り回数が不足しています。\n10kgは2回消化のため残り" + state.remain + "回では注文できません。");
+    return;
+  }
 
   if (state.method === "store") {
     date = document.getElementById("storeDate").value;
@@ -443,14 +442,14 @@ function goConfirm() {
     area = document.getElementById("areaSelect").value;
     date = document.getElementById("deliveryDate").value;
     if (!area) { alert("エリアを選択してください"); return; }
-    if (!date) { alert("配達日を選択してください"); return; }
+    if (!date || date === "") { alert("配達日を選択してください"); return; }
   }
 
-  // 確認画面に値をセット
-  document.getElementById("cfName").innerText   = state.userName;
-  document.getElementById("cfKg").innerText     = state.kg + "kg";
-  document.getElementById("cfMethod").innerText = state.method === "store" ? "店舗受取" : "配達";
-  document.getElementById("cfDate").innerText   = date;
+  document.getElementById("cfName").innerText    = state.userName;
+  document.getElementById("cfKg").innerText      = state.kg + "kg";
+  document.getElementById("cfConsume").innerText = consume + "回";
+  document.getElementById("cfMethod").innerText  = state.method === "store" ? "店舗受取" : "配達";
+  document.getElementById("cfDate").innerText    = date;
 
   var areaRow = document.getElementById("cfAreaRow");
   if (state.method === "delivery") {
@@ -567,11 +566,11 @@ function callGAS(action, params) {
 // ユーティリティ
 // -----------------------------------------------
 function show(id) { document.getElementById(id).style.display = "block"; }
-function hide(id) { document.getElementById(id).style.display = "none"; }
+function hide(id) { document.getElementById(id).style.display = "none";  }
 
 function formatDate(d) {
-  var y = d.getFullYear();
-  var m = ("0" + (d.getMonth() + 1)).slice(-2);
+  var y   = d.getFullYear();
+  var m   = ("0" + (d.getMonth() + 1)).slice(-2);
   var day = ("0" + d.getDate()).slice(-2);
   return y + "-" + m + "-" + day;
 }
