@@ -356,11 +356,15 @@ function showOrderScreen() {
     return;
   }
 
-  // 店舗受取の最短日付を今日+1日に設定
-  var minDate = new Date();
-  minDate.setDate(minDate.getDate() + 1);
-  document.getElementById("storeDate").min = formatDate(minDate);
-  document.getElementById("storeDate").value = formatDate(minDate);
+// 設定シートから最短受付日数を取得して日付制限に反映
+callGAS("getConfig", { key: "最短受付日数" })
+  .then(function (days) {
+    var minDays = parseInt(days) || 7;
+    var minDate = new Date();
+    minDate.setDate(minDate.getDate() + minDays);
+    document.getElementById("storeDate").min = formatDate(minDate);
+    document.getElementById("storeDate").value = formatDate(minDate);
+  });
 
   // エリア一覧を取得
   callGAS("getAreas", {})
