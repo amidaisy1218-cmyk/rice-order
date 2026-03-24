@@ -7,125 +7,308 @@
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
 
   <style>
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
       background: #f4f7f9;
-      margin: 0;
-      padding: 20px;
-      text-align: center;
+      min-height: 100vh;
+      padding: 20px 16px 40px;
     }
 
-    .card {
-      background: white;
-      padding: 24px 20px;
-      border-radius: 15px;
-      display: none;
-      margin-top: 20px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-      text-align: left;
-    }
-
+    /* ローダー */
     #loader {
-      font-weight: bold;
-      color: #888;
-      margin-top: 50px;
       text-align: center;
-    }
-
-    .btn {
-      background: #222;
-      color: white;
-      padding: 15px;
-      border-radius: 10px;
-      border: none;
-      width: 100%;
-      margin-top: 12px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .btn:disabled {
-      background: #aaa;
-      cursor: not-allowed;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-
-    .user-info {
-      background: #f0f7f0;
-      border-radius: 10px;
-      padding: 12px 16px;
-      margin-bottom: 16px;
+      padding-top: 80px;
+      color: #888;
       font-size: 15px;
     }
 
-    .remain-count {
-      font-size: 22px;
-      font-weight: bold;
-      color: #2a7a2a;
+    /* カード共通 */
+    .screen { display: none; }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
     }
 
-    .debug {
-      font-size: 11px;
-      color: #bbb;
-      margin-top: 16px;
-      text-align: center;
-      word-break: break-all;
+    /* ユーザー情報バー */
+    .user-bar {
+      background: #e8f5e9;
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
     }
+    .user-bar .name { font-size: 15px; color: #333; }
+    .user-bar .remain { font-size: 13px; color: #555; }
+    .user-bar .remain span { font-size: 22px; font-weight: bold; color: #2e7d32; }
+
+    /* セクションタイトル */
+    .section-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: #888;
+      margin-bottom: 10px;
+      letter-spacing: 0.05em;
+    }
+
+    /* トグルボタン */
+    .toggle-group {
+      display: flex;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1.5px solid #ddd;
+    }
+    .toggle-group button {
+      flex: 1;
+      padding: 13px;
+      border: none;
+      background: white;
+      font-size: 15px;
+      cursor: pointer;
+      color: #555;
+      transition: all 0.2s;
+    }
+    .toggle-group button.active {
+      background: #222;
+      color: white;
+      font-weight: bold;
+    }
+    .toggle-group button:not(:last-child) {
+      border-right: 1.5px solid #ddd;
+    }
+
+    /* エリア・日付選択 */
+    select {
+      width: 100%;
+      padding: 13px 12px;
+      border: 1.5px solid #ddd;
+      border-radius: 10px;
+      font-size: 15px;
+      background: white;
+      color: #333;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+    }
+
+    input[type="date"] {
+      width: 100%;
+      padding: 13px 12px;
+      border: 1.5px solid #ddd;
+      border-radius: 10px;
+      font-size: 15px;
+      color: #333;
+    }
+
+    /* 配達エリア・日付ブロック */
+    .delivery-block { display: none; margin-top: 0; }
+    .store-block    { display: none; margin-top: 0; }
+
+    /* 確認画面 */
+    .confirm-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 15px;
+    }
+    .confirm-row:last-child { border-bottom: none; }
+    .confirm-row .label { color: #888; }
+    .confirm-row .value { font-weight: bold; color: #222; }
+
+    /* ボタン */
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
+      border: none;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: opacity 0.2s;
+    }
+    .btn:active { opacity: 0.8; }
+    .btn-primary { background: #222; color: white; }
+    .btn-outline {
+      background: white;
+      color: #222;
+      border: 1.5px solid #ddd;
+    }
+    .btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    /* 完了画面 */
+    .complete-icon {
+      font-size: 64px;
+      text-align: center;
+      margin: 20px 0 10px;
+    }
+    .complete-title {
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .complete-sub {
+      text-align: center;
+      color: #888;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* 残り0回の警告 */
+    .warn-box {
+      background: #fff3e0;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      color: #e65100;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .gap { margin-top: 12px; }
+    .debug { font-size: 11px; color: #ccc; text-align: center; margin-top: 8px; word-break: break-all; }
   </style>
 </head>
-
 <body>
 
 <div id="loader">システム起動中...</div>
 
-<!-- 注文フォーム（登録済みユーザー向け） -->
-<div id="orderForm" class="card">
-  <div class="user-info">
-    <span id="userName"></span> 様<br>
-    残り <span id="userRem" class="remain-count">-</span> 回
+<!-- ========== 注文フォーム画面 ========== -->
+<div id="screenOrder" class="screen">
+
+  <!-- ユーザー情報 -->
+  <div class="user-bar">
+    <div class="name" id="userName">-</div>
+    <div class="remain">残り <span id="userRem">-</span> 回</div>
   </div>
-  <h2 style="margin-top:0">お米の注文</h2>
-  <p style="color:#888;font-size:14px">※注文フォームはPhase 3で実装します</p>
-  <button class="btn" onclick="alert('注文機能は次のステップで追加します')">注文する</button>
+
+  <!-- 残り0回の場合 -->
+  <div id="noRemain" class="warn-box" style="display:none">
+    残り回数が0回のため注文できません。<br>
+    契約更新については店舗までお問い合わせください。
+  </div>
+
+  <!-- 注文フォーム本体 -->
+  <div id="orderFormBody">
+
+    <!-- 数量 -->
+    <div class="card">
+      <div class="section-title">数量</div>
+      <div class="toggle-group">
+        <button id="btn5kg"  class="active" onclick="selectKg(5)">5kg</button>
+        <button id="btn10kg"            onclick="selectKg(10)">10kg</button>
+      </div>
+    </div>
+
+    <!-- 受取方法 -->
+    <div class="card">
+      <div class="section-title">受取方法</div>
+      <div class="toggle-group">
+        <button id="btnStore"    class="active" onclick="selectMethod('store')">店舗受取</button>
+        <button id="btnDelivery"            onclick="selectMethod('delivery')">配達</button>
+      </div>
+
+      <!-- 店舗受取：カレンダー -->
+      <div class="store-block gap" id="storeBlock" style="display:block">
+        <div class="section-title" style="margin-top:4px">受取日</div>
+        <input type="date" id="storeDate">
+      </div>
+
+      <!-- 配達：エリア + 日付 -->
+      <div class="delivery-block gap" id="deliveryBlock">
+        <div class="section-title" style="margin-top:4px">配達エリア</div>
+        <select id="areaSelect" onchange="onAreaChange()">
+          <option value="">-- エリアを選択 --</option>
+        </select>
+        <div class="section-title gap" style="margin-top:12px">配達日</div>
+        <select id="deliveryDate">
+          <option value="">-- エリアを選択してください --</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="goConfirm()">注文内容を確認する</button>
+  </div>
 </div>
 
-<!-- 初回登録フォーム（未登録ユーザー向け） -->
-<div id="regForm" class="card">
-  <h2 style="margin-top:0">初回登録</h2>
-  <p style="color:#555;font-size:14px">お名前・住所・電話番号を入力してください</p>
+<!-- ========== 確認画面 ========== -->
+<div id="screenConfirm" class="screen">
+  <div class="card" style="margin-top:8px">
+    <div style="font-size:17px;font-weight:bold;margin-bottom:16px">注文内容の確認</div>
+    <div class="confirm-row"><span class="label">お名前</span><span class="value" id="cfName"></span></div>
+    <div class="confirm-row"><span class="label">数量</span><span class="value" id="cfKg"></span></div>
+    <div class="confirm-row"><span class="label">受取方法</span><span class="value" id="cfMethod"></span></div>
+    <div class="confirm-row" id="cfAreaRow"><span class="label">エリア</span><span class="value" id="cfArea"></span></div>
+    <div class="confirm-row"><span class="label">受取日</span><span class="value" id="cfDate"></span></div>
+  </div>
+  <button class="btn btn-primary" id="submitBtn" onclick="submitOrder()">この内容で注文する</button>
+  <button class="btn btn-outline gap" onclick="goBack()">戻る</button>
+</div>
 
-  <input type="text" id="rName"    placeholder="お名前（必須）">
-  <input type="text" id="rAddress" placeholder="ご住所（必須）">
-  <input type="tel"  id="rTel"     placeholder="電話番号（必須）">
+<!-- ========== 完了画面 ========== -->
+<div id="screenComplete" class="screen">
+  <div class="card" style="margin-top:20px;padding:30px 20px">
+    <div class="complete-icon">✅</div>
+    <div class="complete-title">注文が完了しました</div>
+    <div class="complete-sub">
+      ご注文ありがとうございます。<br>
+      確認後、改めてご連絡いたします。
+    </div>
+    <div class="confirm-row gap" style="margin-top:20px">
+      <span class="label">残り回数</span>
+      <span class="value" id="remainAfter">-</span>
+    </div>
+  </div>
+  <button class="btn btn-outline" onclick="liff.closeWindow()">閉じる</button>
+</div>
 
-  <button class="btn" id="regBtn" onclick="submitReg()">登録する</button>
+<!-- ========== 初回登録画面 ========== -->
+<div id="screenReg" class="screen">
+  <div class="card" style="margin-top:8px">
+    <div style="font-size:17px;font-weight:bold;margin-bottom:4px">初回登録</div>
+    <p style="color:#888;font-size:13px;margin-bottom:16px">お名前・住所・電話番号を入力してください</p>
+    <input type="text" id="rName"    placeholder="お名前（必須）" style="margin-bottom:8px">
+    <input type="text" id="rAddress" placeholder="ご住所（必須）" style="margin-bottom:8px">
+    <input type="tel"  id="rTel"     placeholder="電話番号（必須）">
+  </div>
+  <button class="btn btn-primary" id="regBtn" onclick="submitReg()">登録する</button>
 </div>
 
 <div id="debug-msg" class="debug"></div>
 
 <script>
-// ★ここをGASのデプロイURLに変更
+// ★GASのデプロイURL
 var GAS_URL = "https://script.google.com/macros/s/AKfycbypXWHGPENrNF-eb0GJra_n41dPW71S-J5galefIjkYkwWUBboszzIrNZDnhakmoPPx/exec";
 
-// ★ここをLIFF IDに変更
+// ★LIFF ID
 var LIFF_ID = "2009577200-2OdUcEjb";
 
-window.onload = function () {
-  setDebug("onload開始");
+// 状態管理
+var state = {
+  lineId:   "",
+  lineName: "",
+  userName: "",
+  remain:   0,
+  kg:       5,
+  method:   "store"
+};
 
+// -----------------------------------------------
+// 初期化
+// -----------------------------------------------
+window.onload = function () {
   liff.init({ liffId: LIFF_ID })
     .then(function () {
-      setDebug("LIFF初期化完了");
       if (!liff.isLoggedIn()) {
         liff.login();
       } else {
@@ -140,17 +323,18 @@ window.onload = function () {
 function loadUserData() {
   liff.getProfile()
     .then(function (profile) {
-      setDebug("プロフィール取得OK: " + profile.displayName);
+      state.lineId   = profile.userId;
+      state.lineName = profile.displayName;
       return callGAS("checkUserStatus", { lineId: profile.userId });
     })
     .then(function (res) {
-      document.getElementById("loader").style.display = "none";
+      hide("loader");
       if (res.isRegistered) {
-        document.getElementById("orderForm").style.display = "block";
-        document.getElementById("userName").innerText = res.name;
-        document.getElementById("userRem").innerText  = res.remain;
+        state.userName = res.name;
+        state.remain   = parseInt(res.remain) || 0;
+        showOrderScreen();
       } else {
-        document.getElementById("regForm").style.display = "block";
+        show("screenReg");
       }
     })
     .catch(function (err) {
@@ -158,6 +342,173 @@ function loadUserData() {
     });
 }
 
+// -----------------------------------------------
+// 注文画面の表示
+// -----------------------------------------------
+function showOrderScreen() {
+  document.getElementById("userName").innerText = state.userName + " 様";
+  document.getElementById("userRem").innerText  = state.remain;
+  show("screenOrder");
+
+  if (state.remain <= 0) {
+    hide("orderFormBody");
+    show("noRemain");
+    return;
+  }
+
+  // 店舗受取の最短日付を今日+1日に設定
+  var minDate = new Date();
+  minDate.setDate(minDate.getDate() + 1);
+  document.getElementById("storeDate").min = formatDate(minDate);
+  document.getElementById("storeDate").value = formatDate(minDate);
+
+  // エリア一覧を取得
+  callGAS("getAreas", {})
+    .then(function (areas) {
+      var sel = document.getElementById("areaSelect");
+      sel.innerHTML = '<option value="">-- エリアを選択 --</option>';
+      areas.forEach(function (a) {
+        var opt = document.createElement("option");
+        opt.value = a;
+        opt.textContent = a;
+        sel.appendChild(opt);
+      });
+    });
+}
+
+// -----------------------------------------------
+// 数量選択
+// -----------------------------------------------
+function selectKg(kg) {
+  state.kg = kg;
+  document.getElementById("btn5kg").classList.toggle("active",  kg === 5);
+  document.getElementById("btn10kg").classList.toggle("active", kg === 10);
+}
+
+// -----------------------------------------------
+// 受取方法選択
+// -----------------------------------------------
+function selectMethod(method) {
+  state.method = method;
+  document.getElementById("btnStore").classList.toggle("active",    method === "store");
+  document.getElementById("btnDelivery").classList.toggle("active", method === "delivery");
+  document.getElementById("storeBlock").style.display    = method === "store"    ? "block" : "none";
+  document.getElementById("deliveryBlock").style.display = method === "delivery" ? "block" : "none";
+}
+
+// -----------------------------------------------
+// エリア変更時：配達日を取得
+// -----------------------------------------------
+function onAreaChange() {
+  var area = document.getElementById("areaSelect").value;
+  var dateSel = document.getElementById("deliveryDate");
+  dateSel.innerHTML = '<option value="">読み込み中...</option>';
+
+  if (!area) {
+    dateSel.innerHTML = '<option value="">-- エリアを選択してください --</option>';
+    return;
+  }
+
+  callGAS("getDeliveryDates", { area: area })
+    .then(function (dates) {
+      dateSel.innerHTML = "";
+      if (dates.length === 0) {
+        dateSel.innerHTML = '<option value="">配達可能な日程がありません</option>';
+        return;
+      }
+      dates.forEach(function (d) {
+        var opt = document.createElement("option");
+        opt.value = d.date;
+        opt.textContent = d.date;
+        dateSel.appendChild(opt);
+      });
+    });
+}
+
+// -----------------------------------------------
+// 確認画面へ
+// -----------------------------------------------
+function goConfirm() {
+  var date, area;
+
+  if (state.method === "store") {
+    date = document.getElementById("storeDate").value;
+    if (!date) { alert("受取日を選択してください"); return; }
+    area = "-";
+  } else {
+    area = document.getElementById("areaSelect").value;
+    date = document.getElementById("deliveryDate").value;
+    if (!area) { alert("エリアを選択してください"); return; }
+    if (!date) { alert("配達日を選択してください"); return; }
+  }
+
+  // 確認画面に値をセット
+  document.getElementById("cfName").innerText   = state.userName;
+  document.getElementById("cfKg").innerText     = state.kg + "kg";
+  document.getElementById("cfMethod").innerText = state.method === "store" ? "店舗受取" : "配達";
+  document.getElementById("cfDate").innerText   = date;
+
+  var areaRow = document.getElementById("cfAreaRow");
+  if (state.method === "delivery") {
+    document.getElementById("cfArea").innerText = area;
+    areaRow.style.display = "flex";
+  } else {
+    areaRow.style.display = "none";
+  }
+
+  hide("screenOrder");
+  show("screenConfirm");
+}
+
+function goBack() {
+  hide("screenConfirm");
+  show("screenOrder");
+}
+
+// -----------------------------------------------
+// 注文送信
+// -----------------------------------------------
+function submitOrder() {
+  var btn = document.getElementById("submitBtn");
+  btn.disabled    = true;
+  btn.textContent = "送信中...";
+
+  var area = state.method === "store"
+    ? "-"
+    : document.getElementById("areaSelect").value;
+  var date = state.method === "store"
+    ? document.getElementById("storeDate").value
+    : document.getElementById("deliveryDate").value;
+
+  callGAS("submitOrder", {
+    lineId: state.lineId,
+    name:   state.userName,
+    kg:     state.kg,
+    method: state.method === "store" ? "店舗受取" : "配達",
+    area:   area,
+    date:   date
+  })
+  .then(function (res) {
+    if (res.status === "OK") {
+      hide("screenConfirm");
+      document.getElementById("remainAfter").innerText = res.remain + " 回";
+      show("screenComplete");
+    } else {
+      alert("エラー: " + res.message);
+      btn.disabled    = false;
+      btn.textContent = "この内容で注文する";
+    }
+  })
+  .catch(function (err) {
+    alert("通信エラー: " + String(err));
+    btn.disabled    = false;
+    btn.textContent = "この内容で注文する";
+  });
+}
+
+// -----------------------------------------------
+// 初回登録
+// -----------------------------------------------
 function submitReg() {
   var name    = document.getElementById("rName").value.trim();
   var address = document.getElementById("rAddress").value.trim();
@@ -171,53 +522,60 @@ function submitReg() {
   btn.disabled    = true;
   btn.textContent = "送信中...";
 
-  liff.getProfile()
-    .then(function (p) {
-      return callGAS("registerCustomer", {
-        lineId:   p.userId,
-        lineName: p.displayName,
-        name:     name,
-        address:  address,
-        tel:      tel
-      });
-    })
-    .then(function (result) {
-      if (result === "OK") {
-        alert("登録が完了しました！\nもう一度開いて注文してください");
-        liff.closeWindow();
-      } else {
-        showError("登録エラー: " + result);
-        btn.disabled    = false;
-        btn.textContent = "登録する";
-      }
-    })
-    .catch(function (err) {
-      showError("通信エラー: " + String(err));
+  callGAS("registerCustomer", {
+    lineId:   state.lineId,
+    lineName: state.lineName,
+    name:     name,
+    address:  address,
+    tel:      tel
+  })
+  .then(function (result) {
+    if (result === "OK") {
+      alert("登録が完了しました！\nもう一度開いて注文してください");
+      liff.closeWindow();
+    } else {
+      alert("登録エラー: " + result);
       btn.disabled    = false;
       btn.textContent = "登録する";
-    });
+    }
+  })
+  .catch(function (err) {
+    alert("通信エラー: " + String(err));
+    btn.disabled    = false;
+    btn.textContent = "登録する";
+  });
 }
 
-// GASにPOSTリクエストを送る共通関数
+// -----------------------------------------------
+// GAS通信
+// -----------------------------------------------
 function callGAS(action, params) {
   var body = Object.assign({ action: action }, params);
   return fetch(GAS_URL, {
-    method: "POST",
-    body: JSON.stringify(body),
+    method:  "POST",
+    body:    JSON.stringify(body),
     headers: { "Content-Type": "text/plain" }
   })
   .then(function (r) { return r.json(); });
+}
+
+// -----------------------------------------------
+// ユーティリティ
+// -----------------------------------------------
+function show(id) { document.getElementById(id).style.display = "block"; }
+function hide(id) { document.getElementById(id).style.display = "none"; }
+
+function formatDate(d) {
+  var y = d.getFullYear();
+  var m = ("0" + (d.getMonth() + 1)).slice(-2);
+  var day = ("0" + d.getDate()).slice(-2);
+  return y + "-" + m + "-" + day;
 }
 
 function showError(msg) {
   document.getElementById("loader").innerHTML =
     '<span style="color:red">' + msg + '</span>';
 }
-
-function setDebug(msg) {
-  document.getElementById("debug-msg").innerText = msg;
-}
 </script>
-
 </body>
 </html>
