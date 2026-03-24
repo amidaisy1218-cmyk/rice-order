@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta charset="UTF-8">
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+      background: #f4f7f9;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      padding: 24px 20px;
+      border-radius: 15px;
+      display: none;
+      margin-top: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      text-align: left;
+    }
+
+    #loader {
+      font-weight: bold;
+      color: #888;
+      margin-top: 50px;
+      text-align: center;
+    }
+
+    .btn {
+      background: #222;
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      border: none;
+      width: 100%;
+      margin-top: 12px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .btn:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    .user-info {
+      background: #f0f7f0;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      font-size: 15px;
+    }
+
+    .remain-count {
+      font-size: 22px;
+      font-weight: bold;
+      color: #2a7a2a;
+    }
+
+    .debug {
+      font-size: 12px;
+      color: #999;
+      margin-top: 16px;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="loader">システム起動中...</div>
+
+<!-- 注文フォーム（登録済みユーザー向け） -->
+<div id="orderForm" class="card">
+  <div class="user-info">
+    <span id="userName"></span> 様<br>
+    残り <span id="userRem" class="remain-count">-</span> 回
+  </div>
+  <h2 style="margin-top:0">お米の注文</h2>
+  <p style="color:#888;font-size:14px">※注文フォームはPhase 3で実装します</p>
+  <button class="btn" onclick="alert('注文機能は次のステップで追加します')">注文する</button>
+</div>
+
+<!-- 初回登録フォーム（未登録ユーザー向け） -->
+<div id="regForm" class="card">
+  <h2 style="margin-top:0">初回登録</h2>
+  <p style="color:#555;font-size:14px">お名前・住所・電話番号を入力してください</p>
+
+  <input type="text" id="rName"    placeholder="お名前（必須）">
+  <input type="text" id="rAddress" placeholder="ご住所（必須）">
+  <input type="tel"  id="rTel"     placeholder="電話番号（必須）">
+
+  <button class="btn" id="regBtn" onclick="submitReg()">登録する</button>
+</div>
+
+<div id="debug-msg" class="debug"></div>
+
+<script>
+var LIFF_ID = "<?!= liffId ?>";
+
+window.onload = function () {
+  setDebug("onload開始");
+
+  if (!LIFF_ID || LIFF_ID === "") {
+    showError("LIFF IDが空です。設定シートを確認してください");
+    return;
+  }
+
+  setDebug("LIFF初期化中... ID=" + LIFF_ID);
+
+  try {
+    liff.init({ liffId: LIFF_ID })
+      .then(function() {
+        setDebug("LIFF初期化完了");
+        if (!liff.isLoggedIn()) {
+          setDebug("ログインへリダイレクト");
+          liff.login();
+        } else {
+          setDebug("プロフィール取得中");
+          loadUserData();
+        }
+      })
+      .catch(function(err) {
+        showError("LIFF初期化失敗: " + String(err));
+      });
+  } catch(e) {
+    showError("LIFF例外エラー: " + String(e));
+  }
+};
+
+function loadUserData() {
+  liff.getProfile()
+    .then(function(profile) {
+      setDebug("プロフィール取得OK: " + profile.displayName);
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          document.getElementById("loader").style.display = "none";
+
+          if (res.isRegistered) {
+            document.getElementById("orderForm").style.display = "block";
+            document.getElementById("userName").innerText = res.name;
+            document.getElementById("userRem").innerText  = res.remain;
+          } else {
+            document.getElementById("regForm").style.display = "block";
+          }
+        })
+        .withFailureHandler(function(err) {
+          showError("GAS通信エラー: " + JSON.stringify(err));
+        })
+        .checkUserStatus(profile.userId);
+    })
+    .catch(function(err) {
+      showError("getProfileエラー: " + JSON.stringify(err));
+    });
+}
+
+function submitReg() {
+  var name    = document.getElementById("rName").value.trim();
+  var address = document.getElementById("rAddress").value.trim();
+  var tel     = document.getElementById("rTel").value.trim();
+
+  if (!name)    { alert("お名前を入力してください"); return; }
+  if (!address) { alert("ご住所を入力してください"); return; }
+  if (!tel)     { alert("電話番号を入力してください"); return; }
+
+  var btn = document.getElementById("regBtn");
+  btn.disabled    = true;
+  btn.textContent = "送信中...";
+
+  liff.getProfile().then(function(p) {
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result === "OK") {
+          alert("登録が完了しました！\nもう一度開いて注文してください");
+          liff.closeWindow();
+        } else {
+          showError("登録エラー: " + result);
+          btn.disabled    = false;
+          btn.textContent = "登録する";
+        }
+      })
+      .withFailureHandler(function(err) {
+        showError("GAS通信エラー: " + JSON.stringify(err));
+        btn.disabled    = false;
+        btn.textContent = "登録する";
+      })
+      .registerCustomer({
+        lineId:   p.userId,
+        lineName: p.displayName,
+        name:     name,
+        address:  address,
+        tel:      tel
+      });
+  });
+}
+
+function showError(msg) {
+  document.getElementById("loader").innerHTML =
+    '<span style="color:red">' + msg + '</span>';
+}
+
+function setDebug(msg) {
+  document.getElementById("debug-msg").innerText = msg;
+}
+</script>
+
+</body>
+</html>
