@@ -257,6 +257,13 @@
     <input type="text" id="rName"    placeholder="お名前（必須）" style="width:100%;padding:12px;margin-bottom:8px;border:1.5px solid #ddd;border-radius:10px;font-size:15px">
     <input type="text" id="rAddress" placeholder="ご住所（必須）" style="width:100%;padding:12px;margin-bottom:8px;border:1.5px solid #ddd;border-radius:10px;font-size:15px">
     <input type="tel"  id="rTel"     placeholder="電話番号（必須）" style="width:100%;padding:12px;border:1.5px solid #ddd;border-radius:10px;font-size:15px">
+    <div style="background:#f8f8f8;border-radius:8px;padding:12px;margin-top:14px;font-size:12px;color:#666;line-height:1.7">
+      ご入力いただいた個人情報（氏名・住所・電話番号）は、お米の定期購入サービスの提供・管理のみに使用します。第三者への提供は行いません。
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px;color:#333;cursor:pointer">
+      <input type="checkbox" id="privacyCheck">
+      上記の個人情報の取り扱いに同意する
+    </label>
   </div>
   <button class="btn btn-primary" id="regBtn" onclick="submitReg()">登録する</button>
 </div>
@@ -541,6 +548,10 @@ function submitReg() {
   if (!name)    { alert("お名前を入力してください"); return; }
   if (!address) { alert("ご住所を入力してください"); return; }
   if (!tel)     { alert("電話番号を入力してください"); return; }
+  if (!document.getElementById("privacyCheck").checked) {
+    alert("個人情報の取り扱いに同意してください");
+    return;
+  }
 
   var btn = document.getElementById("regBtn");
   btn.disabled    = true;
@@ -555,7 +566,7 @@ function submitReg() {
   })
   .then(function (result) {
     if (result === "OK") {
-      alert("ご登録ありがとうございます！\nお店側で登録内容を確認後、\nLINEにてお米の注文が可能になった旨をご連絡いたします。\nしばらくお待ちください。");
+      alert("登録が完了しました！\nもう一度開いて注文してください");
       liff.closeWindow();
     } else {
       alert("登録エラー: " + result);
